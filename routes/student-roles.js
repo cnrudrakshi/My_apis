@@ -28,6 +28,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const studentRolesId= req.params.id;
+  if(studentRolesId <=0){
+    return res.send("Invalid role ID.");
+  }
   const connection = await createDataBaseConnection();
    try {
     const [results] = await connection.query(
@@ -42,6 +45,12 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async(req, res) => {
   const {role_name, description, student_id} = req.body;
+    if(!role_name|| !description|| !student_id){
+    res.send("All fields (role_name, description, student_id) are required.")
+  }
+  if (role_name.length < 2 || description.length <2) {
+     res.send("role must be at least 2 characters long.");
+  }
   const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(
@@ -58,6 +67,12 @@ router.patch("/:id", async(req, res) => {
   const studentRolesId= req.params.id;
   const connection = await createDataBaseConnection();
   const{role_name} = req.body
+   if(!role_name){
+    res.send("role is required.");
+  }
+  if(role_name.length < 2){
+    res.send("role must be at least 2 characters long.");
+  }
     try {
     const [results] = await connection.query(
           "UPDATE roles SET role_name = ? WHERE id = ?",
@@ -74,6 +89,12 @@ router.put("/:id", async(req, res) => {
   const studentRolesId= req.params.id;
   const connection = await createDataBaseConnection();
   const {role_name, description, student_id} = req.body;
+    if(!role_name|| !description|| !student_id){
+    res.send("All fields (role_name, description, student_id) are required.")
+  }
+  if (role_name.length < 2 || description.length <2) {
+     res.send("role must be at least 2 characters long.");
+  }
   try {
     const [results] = await connection.query(
       "UPDATE roles SET role_name = ?, description = ?, student_id = ? WHERE id = ?",
@@ -89,6 +110,9 @@ router.put("/:id", async(req, res) => {
 
 router.delete("/:id", async(req, res) => {
     const studentRolesId= req.params.id;
+     if(studentRolesId <=0){
+      return req.send("Invalid role id.")
+    }
     const connection = await createDataBaseConnection();
     try {
     const [results] = await connection.query(

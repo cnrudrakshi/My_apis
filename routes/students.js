@@ -28,7 +28,10 @@ router.get("/", async (req, res) => {
 
 // particular id leke uski details dekhna
 router.get("/:id", async (req, res) => {
-  const courseId = req.params.id;
+  const studentId = req.params.id;
+  if (studentId <= 0) {
+      return res.status(400).send("Student with this Id not exist.");
+    }
   const connection = await createDataBaseConnection();
    try {
     const [results] = await connection.query(
@@ -44,6 +47,12 @@ router.get("/:id", async (req, res) => {
 // ek new student add karna hai
 router.post("/", async(req, res) => {
   const {first_name, last_name, email_address, date_of_birth, enrollment_date} = req.body;
+    if(!first_name|| !last_name|| !email_address || !date_of_birth || !enrollment_date){
+    res.send("All fields (first_name, last_name, email_address, date_of_birth, enrollment_date) are required.")
+  }
+  if (first_name.length < 2 || last_name.length<2) {
+    res.send("student name must be at least 2 characters long.");
+  }
   const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(
@@ -60,6 +69,12 @@ router.patch("/:id", async(req, res) => {
   const studentId = req.params.id;
   const connection = await createDataBaseConnection();
   const{first_name} = req.body
+  if(!first_name){
+    res.send("first name is required.");
+  }
+  if(first_name.length < 2){
+    res.send("student name must be at least 2 characters long.");
+  }
     try {
     const [results] = await connection.query(
           "UPDATE students SET first_name = ? WHERE id = ?",
@@ -77,6 +92,12 @@ router.put("/:id", async(req, res) => {
   const  studentId = req.params.id;
   const connection = await createDataBaseConnection();
   const { first_name, last_name, email_address, date_of_birth, enrollment_date} = req.body;
+   if(!first_name|| !last_name|| !email_address || !date_of_birth || !enrollment_date){
+    res.send("All fields (first_name, last_name, email_address, date_of_birth, enrollment_date) are required.")
+  }
+  if (first_name.length < 2 || last_name.length<2) {
+    res.send("student name must be at least 2 characters long.");
+  }
   try {
     const [results] = await connection.query(
       "UPDATE students SET first_name = ?, last_name = ?, email_address = ?,date_of_birth  = ?,enrollment_date = ?  WHERE id = ?",
@@ -92,6 +113,9 @@ router.put("/:id", async(req, res) => {
 // direct id deke send
 router.delete("/:id", async(req, res) => {
     const  studentId = req.params.id;
+    if(studentId <=0){
+      return req.send("Invalid student id.")
+    }
     const connection = await createDataBaseConnection();
     try {
     const [results] = await connection.query(

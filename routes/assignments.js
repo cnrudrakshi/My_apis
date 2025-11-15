@@ -29,6 +29,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const assignmentsId = req.params.id;
+  if(assignmentsId<=0){
+    res.send("Invalid assignmet id.")
+  }
   const connection = await createDataBaseConnection();
    try {
     const [results] = await connection.query(
@@ -42,12 +45,18 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async(req, res) => {
-  const {title, assignment_no, due_date, submit_date, student_id } = req.body;
+  const {title, assignment_no, due_date, submit_date, student_id,course_id } = req.body;
+  if(!title || !assignment_no || !due_date || !submit_date || !student_id || !course_id ){
+    return res.status(400).send("All fields (title, assignment_no, due_date, submit_date, student_id,course_id) are required.");
+  }
+   if (title.length <2 ) {
+     res.send("title must be at least 4 characters long.");
+  }
   const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(
-       'INSERT INTO assignments (title, assignment_no, due_date, submit_date, student_id ) VALUES (?,?,?,?,?)',
-       [title, assignment_no, due_date, submit_date, student_id ]
+       'INSERT INTO assignments (title, assignment_no, due_date, submit_date, student_id, course_id ) VALUES (?,?,?,?,?,?)',
+       [title, assignment_no, due_date, submit_date, student_id, course_id ]
     );
     res.send("new assignment added");
   }   catch (err) {

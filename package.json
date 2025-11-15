@@ -16,6 +16,13 @@
     "express": "^5.1.0",
     "mysql2": "^3.15.3",
     "nodemon": "^3.1.10"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cnrudrakshi/My_apis.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cnrudrakshi/My_apis/issues"
+  },
+  "homepage": "https://github.com/cnrudrakshi/My_apis#readme"
 }
-

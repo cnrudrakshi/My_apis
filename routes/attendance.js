@@ -42,6 +42,9 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async(req, res) => {
   const {student_id, course_id, attendance_date, status} = req.body;
+  if(!student_id || !course_id || !attendance_date || !status){
+    return res.send("All feilds student_id, course_id, attendance_date, status are required");
+  }
   const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(

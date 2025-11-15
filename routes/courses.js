@@ -29,8 +29,9 @@ router.get("/", async (req, res) => {
 // particular id leke uski details dekhna
 router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
-  if (courseId <= 0 || courseId >10) {
-      return res.status(400).send("Invalid course ID format.");
+  // if a user give id no. 500 then how to check that this id does not exist beacuse it is greater that total no. of id (or maximum of id)
+  if (courseId <= 0) {
+      return res.send("Invalid course ID.");
     }
 
   const connection = await createDataBaseConnection();
@@ -54,26 +55,16 @@ router.get("/:id", async (req, res) => {
 router.post("/", async(req, res) => {
   const {course_name, fees, duration, end_day} = req.body;
    if (!course_name || !fees || !duration || !end_day) {
-    return res.status(400).send("All fields (course_name, fees, duration, end_day) are required.");
+     res.send("All fields (course_name, fees, duration, end_day) are required.");
   }
-  if (course_name.length < 2) {
-    return res.status(400).send("Course name must be at least 2 characters long.");
+  if (course_name.length <2 ) {
+     res.send("Course name must be at least 2 characters long.");
   }
   if (duration < 1) {
-    return res.status(400).send("Course duration must be at least 1 month.");
+     res.send("Course duration must be at least 1 month.");
   }
   const connection = await createDataBaseConnection();
   try {
-    // ✅ Check duplicate from database
-    const [existingCourse] = await connection.query(
-      "SELECT * FROM courses WHERE course_name = ?",
-      [course_name]
-    );
-
-    if (existingCourse.length > 0) {
-      return res.status(409).send("Course already exists.");
-    }
-
     const [results] = await connection.query(
        'INSERT INTO courses (course_name,fees, duration, end_day) VALUES (?,?,?,?)',
        [course_name, fees, duration, end_day]
@@ -88,9 +79,14 @@ router.post("/", async(req, res) => {
 router.patch("/:id", async(req, res) => {
   const courseId = req.params.id;
   const connection = await createDataBaseConnection();
-  const{course_name} = req.body
+  const{course_name} = req.body;
+   if (!course_name) {
+     res.send("course_name is required.");
+  }
+  if (course_name.length < 2) {
+      res.send("Course name must be at least 2 characters long.");
+  }
     try {
-
     const [results] = await connection.query(
           "UPDATE courses SET course_name = ? WHERE id = ?",
        [course_name,courseId]
@@ -107,6 +103,15 @@ router.put("/:id", async(req, res) => {
   const courseId = req.params.id;
   const connection = await createDataBaseConnection();
   const { course_name, fees, duration, end_day } = req.body;
+  if (!course_name || !fees || !duration || !end_day) {
+     res.status(400).send("All fields (course_name, fees, duration, end_day) are required.");
+  }
+  if (course_name.length < 2) {
+     res.status(400).send("Course name must be at least 2 characters long.");
+  }
+  if (duration < 1) {
+     res.send("Course duration must be at least 1 month.");
+  }
   try {
     const [results] = await connection.query(
       "UPDATE courses SET course_name = ?, fees = ?, duration = ?, end_day = ? WHERE id = ?",
@@ -122,6 +127,9 @@ router.put("/:id", async(req, res) => {
 // direct id deke send
 router.delete("/:id", async(req, res) => {
     const courseId = req.params.id;
+     if (courseId <= 0) {
+       res.send("Invalid course ID.");
+    }
     const connection = await createDataBaseConnection();
     try {
     const [results] = await connection.query(

@@ -28,6 +28,9 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const fee_InstrallmentsId = req.params.id;
+    if (fee_InstrallmentsId <= 0) {
+       res.send("Invalid fee_InstrallmentsId ID.");
+    }
   const connection = await createDataBaseConnection();
    try {
     const [results] = await connection.query(
@@ -42,6 +45,12 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async(req, res) => {
   const {amount, installment_no, pay_date} = req.body;
+  if(!amount|| !installment_no|| !pay_date){
+    res.send("All fields (amount, installment_no, pay_date) are required.")
+  }
+  if(amount<=0){
+    res.send("fill the amount properly");
+  }
   const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(
@@ -58,6 +67,10 @@ router.patch("/:id", async(req, res) => {
   const fee_InstrallmentsId = req.params.id;
   const connection = await createDataBaseConnection();
   const{amount} = req.body
+  if(!amount|| amount<=0){
+    res.send("amount is required.")
+  }
+  
     try {
     const [results] = await connection.query(
           "UPDATE fees_installments SET amount = ? WHERE id = ?",
@@ -74,6 +87,12 @@ router.put("/:id", async(req, res) => {
   const fee_InstrallmentsId = req.params.id;
   const connection = await createDataBaseConnection();
   const {amount, installment_no, pay_date} = req.body;
+  if(!amount|| !installment_no|| !pay_date){
+    res.send("All fields (amount, installment_no, pay_date) are required.")
+  }
+  if(amount<=0){
+    res.send("fill the amount properly");
+  }
   try {
     const [results] = await connection.query(
       "UPDATE fees_installments SET amount = ?, installment_no = ?, pay_date = ? WHERE id = ?",
@@ -89,6 +108,9 @@ router.put("/:id", async(req, res) => {
 
 router.delete("/:id", async(req, res) => {
     const fee_InstrallmentsId = req.params.id;
+     if (fee_InstrallmentsId <= 0) {
+       res.send("Invalid fee_InstrallmentsId ID.");
+    }
     const connection = await createDataBaseConnection();
     try {
     const [results] = await connection.query(

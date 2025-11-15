@@ -19,7 +19,7 @@ app.use('/attendance', attendanceRouter);
 
 const PORT = 5354;
 app.listen(PORT, () => {
-  console.log('Server started at ${PORT}');
+  console.log(`Server started at ${PORT}`);
 });
 
 
