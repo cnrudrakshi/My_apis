@@ -15,21 +15,29 @@ async function createDataBaseConnection() {
 
 router.get("/", async (req, res) => {
   const connection = await createDataBaseConnection();
-  // A simple SELECT query
   try {
     const [results] = await connection.query(
        'SELECT * FROM `roles`'
     );
-    res.send(results);
+     if (results.length === 0) {
+      res.status(404).send("No student Role available");
+    }
+    else{
+      res.status(200).send(results);
+    }
+
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
   }
 });
 
 router.get("/:id", async (req, res) => {
   const studentRolesId= req.params.id;
   if(studentRolesId <=0){
-    return res.send("Invalid role ID.");
+   res.status(400).send("Invalid role ID.");
+  }
+   if (isNaN(studentRolesId)) {
+    res.status(400).send("Invalid ID format — ID must be a number");
   }
   const connection = await createDataBaseConnection();
    try {
@@ -37,9 +45,12 @@ router.get("/:id", async (req, res) => {
        'SELECT * FROM `roles` where `id` = ? ',
        [studentRolesId]
     );
-    res.send(results[0]);
+     if (results.length === 0) {
+      res.status(404).send("No student Role data available");
+    }
+    res.status(200).send(results[0]);
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
   }
 });
 
@@ -48,81 +59,123 @@ router.post("/", async(req, res) => {
     if(!role_name|| !description|| !student_id){
     res.send("All fields (role_name, description, student_id) are required.")
   }
-  if (role_name.length < 2 || description.length <2) {
-     res.send("role must be at least 2 characters long.");
+  if (role_name.length < 2 ) {
+     res.status(422).send("role must be at least 2 characters long.");
+  }
+  if (description.length <2) {
+     res.status(422).send("description must be at least 2 characters long.");
+  }
+  if (isNaN(student_id)) {
+    res.status(400).send("student id must be a numeric value");
   }
   const connection = await createDataBaseConnection();
   try {
-    const [results] = await connection.query(
+    const [alreadyExist] = await connection.query(
+      'SELECT *FROM roles WHERE `role_name` = ? ',
+      [role_name]
+    )
+    if(alreadyExist.length>0){
+      res.status(422).send("role already exists you need to add unique course");
+    }
+    else{
+ const [results] = await connection.query(
        'INSERT INTO roles (role_name, description, student_id) VALUES (?,?,?)',
        [role_name, description, student_id]
     );
-      res.send("new role added");
+   res.status(201).send("new role added");
+    }
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
   }
 });
 
 router.patch("/:id", async(req, res) => {
   const studentRolesId= req.params.id;
-  const connection = await createDataBaseConnection();
-  const{role_name} = req.body
+  const{role_name} = req.body;
+   if(studentRolesId <=0){
+   res.status(400).send("Invalid role ID.");
+  }
+   if (isNaN(studentRolesId)) {
+    res.status(400).send("Invalid ID format — ID must be a number");
+  }
    if(!role_name){
-    res.send("role is required.");
+    res.status(400).send("role is required.");
   }
   if(role_name.length < 2){
-    res.send("role must be at least 2 characters long.");
+    res.status(422).send("role must be at least 2 characters long.");
   }
+  if (isNaN(student_id)) {
+    res.status(400).send("student id must be a numeric value");
+  }
+  const connection = await createDataBaseConnection();
     try {
-    const [results] = await connection.query(
+      const [alreadyExist] = await connection.query(
+      'SELECT *FROM roles WHERE `role_name` = ? ',
+      [role_name]
+    )
+    if(alreadyExist.length>0){
+      res.status(422).send("role already exists you need to add unique course");
+    }
+    else{
+  const [results] = await connection.query(
           "UPDATE roles SET role_name = ? WHERE id = ?",
        [role_name,studentRolesId]
     );
-      res.send("student role updated");
+  res.status(200).send("student role updated");
+    }
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
   }
 
 });
 
 router.put("/:id", async(req, res) => {
   const studentRolesId= req.params.id;
-  const connection = await createDataBaseConnection();
-  const {role_name, description, student_id} = req.body;
+   if(studentRolesId <=0){
+   res.status(400).send("Invalid role ID.");
+  }
+   if (isNaN(studentRolesId)) {
+    res.status(400).send("Invalid ID format — ID must be a number");
+  }
+    const {role_name, description, student_id} = req.body;
     if(!role_name|| !description|| !student_id){
-    res.send("All fields (role_name, description, student_id) are required.")
+    res.status(422).send("All fields (role_name, description, student_id) are required.")
   }
   if (role_name.length < 2 || description.length <2) {
-     res.send("role must be at least 2 characters long.");
+     res.status(400).send(" Field Must be at least 2 characters long.");
   }
+  if (isNaN(student_id)) {
+    res.status(400).send("student id must be a numeric value");
+  }
+  const connection = await createDataBaseConnection();
   try {
     const [results] = await connection.query(
       "UPDATE roles SET role_name = ?, description = ?, student_id = ? WHERE id = ?",
       [role_name, description, student_id, studentRolesId]
     );
 
-    res.send("student role updated");
+    res.status(200).send("student role updated");
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
   }
 });
 
 
 router.delete("/:id", async(req, res) => {
     const studentRolesId= req.params.id;
-     if(studentRolesId <=0){
-      return req.send("Invalid role id.")
-    }
-    const connection = await createDataBaseConnection();
+    if (isNaN(studentRolesId) || studentRolesId <= 0) {
+    res.status(400).send("Invalid ID format — ID must be a number");
+  }
+ const connection = await createDataBaseConnection();
     try {
     const [results] = await connection.query(
       "DELETE FROM roles WHERE id = ?",
       [studentRolesId]
     );
 
-    res.send("role deleted successfully");
+    res.status(200).send("role deleted successfully");
   } catch (err) {
-    console.log(err);
+     res.status(500).send("Internal Server Error");
     
   }
 });
